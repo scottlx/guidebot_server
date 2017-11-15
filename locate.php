@@ -28,17 +28,14 @@ class db {
     //end create_database
     //create_tables
     private static function create_tables() {
-        $result = self::$conn->query("select * from QUEUE limit 1");
-        if(empty($result)) {
-                   $query = "CREATE TABLE LOCATION (
-                          id varchar(255) DEFAULT 'empty',
+                   $query = "CREATE TABLE IF NOT EXISTS LOCATION (
+                          id varchar(255),
 			  map_x DOUBLE,
                           map_y DOUBLE,
                           map_w DOUBLE,
                           map_z DOUBLE,
                           )";
             self::$conn->query($query) or die("create table failed");
-        }
     }
     //end create_tables
 } 
@@ -66,7 +63,7 @@ class coordinate {
         }
 
         else{
-        $this->conn->query("UPDATE LOCATION SET map_x =" . $data['poseAMCLx'] . ", map_x =" . $data['poseAMCLx'] . ",map_y = " . $data['poseAMCLy'] . ",map_w =". $data['poseAMCLw'] . ",map_z =" . $data['poseAMCLz'] . "WHERE id = 'empty'") or die("location update failed");
+        $this->conn->query("UPDATE LOCATION SET map_x =" . $data['poseAMCLx'] . ",map_y = " . $data['poseAMCLy'] . ",map_w =". $data['poseAMCLw'] . ",map_z =" . $data['poseAMCLz'] . "WHERE id = 'empty'") or die("location update failed");
        }
        exit;
     }
@@ -75,11 +72,13 @@ class coordinate {
     //send_cor
     public function send_cor(){
        $a = array();
-       $a["x"]=$this->mapx;
-       $a["y"]=$this->mapy;
-       $a["w"]=$this->mapw;
-       $a["z"]=$this->mapz;
-
+       $result = $this->conn->query("select * from LOCATION where id = 'empty'") or die("send failed");
+       if($row =  $result->fetch_assoc()) {
+       $a["x"]=$row["map_x"];
+       $a["y"]=$row["map_y"];
+       $a["w"]=$row["map_w"];
+       $a["z"]=$row["map_z"];
+       }
        $this->json_headers();
        echo json_encode($a);
        exit;
@@ -100,8 +99,6 @@ class coordinate {
 
 
 
-while (1){
-
 	if(isset($_GET['locate'])) {
          $cor = new coordinate();
    	 $cor->locate();
@@ -112,4 +109,3 @@ while (1){
          $cor->send_cor();
 	}
 
-}
