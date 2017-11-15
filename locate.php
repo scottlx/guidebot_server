@@ -62,7 +62,7 @@ class coordinate {
        $data = json_decode($data, TRUE);
 
 	$this->conn->query("insert into LOCATION values(NULL," . $data['poseAMCLx'] . "," . $data['poseAMCLy'] . "," . $data['poseAMCLw'] . "," . $data['poseAMCLz'] . ",NOW() )") or die("location insert failed");
-        }
+
        exit;
     }
     //end locate
