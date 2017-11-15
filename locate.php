@@ -28,14 +28,19 @@ class db {
     //end create_database
     //create_tables
     private static function create_tables() {
-                   $query = "CREATE TABLE IF NOT EXISTS LOCATION (
-                          id varchar(255),
+        $result = self::$conn->query("select * from LOCATION limit 1");
+        if(empty($result)) {
+                   $query = "CREATE TABLE LOCATION (
+                          id INT AUTO_INCREMENT,
 			  map_x DOUBLE,
                           map_y DOUBLE,
                           map_w DOUBLE,
                           map_z DOUBLE,
+                          date_created DATETIME,
+                          PRIMARY KEY  (ID)
                           )";
             self::$conn->query($query) or die("create table failed");
+	}
     }
     //end create_tables
 } 
@@ -56,15 +61,8 @@ class coordinate {
        $data=file_get_contents("php://input"); 
        $data = json_decode($data, TRUE);
 
-       $result = $this->conn->query("select * from LOCATION limit 1");
-
-        if(empty($result)) {
-	$this->conn->query("insert into LOCATION values('empty'," . $data['poseAMCLx'] . "," . $data['poseAMCLy'] . "," . $data['poseAMCLw'] . "," . $data['poseAMCLz'] . ")") or die("location insert failed");
+	$this->conn->query("insert into LOCATION values(NULL," . $data['poseAMCLx'] . "," . $data['poseAMCLy'] . "," . $data['poseAMCLw'] . "," . $data['poseAMCLz'] . ",NOW() )") or die("location insert failed");
         }
-
-        else{
-        $this->conn->query("UPDATE LOCATION SET map_x =" . $data['poseAMCLx'] . ",map_y = " . $data['poseAMCLy'] . ",map_w =". $data['poseAMCLw'] . ",map_z =" . $data['poseAMCLz'] . "WHERE id = 'empty'") or die("location update failed");
-       }
        exit;
     }
     //end locate
@@ -72,7 +70,7 @@ class coordinate {
     //send_cor
     public function send_cor(){
        $a = array();
-       $result = $this->conn->query("select * from LOCATION where id = 'empty'") or die("send failed");
+       $result = $this->conn->query("select * from LOCATION ORDER BY id DESC LIMIT 0, 1") or die("send failed");
        if($row =  $result->fetch_assoc()) {
        $a["x"]=$row["map_x"];
        $a["y"]=$row["map_y"];
